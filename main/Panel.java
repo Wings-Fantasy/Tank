@@ -144,7 +144,7 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 			if(myTank.getX()<351) myTank.right();
 		}
 		if(e.getKeyCode()==KeyEvent.VK_SPACE) {
-			if(myTank.getBullets().size()<8){
+			if(myTank.getBullets().size()<8&&myTank.getFlag()){
 				myTank.firedBullets();
 			}
 		}
