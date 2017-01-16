@@ -1,5 +1,5 @@
 package tank;
-public class Explosion {
+public class Explosion implements Runnable {
 	private int x;
 	private int y;
 	private int survivalPeriod = 9;
@@ -20,11 +20,19 @@ public class Explosion {
 	public boolean getFlag() {
 		return flag;
 	}
-	public void dead() {
-		if(survivalPeriod>0) {
-			survivalPeriod--;
-		}else{
-			flag = false;
+	@Override
+	public void run() {
+		while(flag){
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			if(survivalPeriod>0) {
+				survivalPeriod--;
+			}else{
+				flag = false;
+			}
 		}
 	}
 }

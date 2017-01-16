@@ -61,7 +61,8 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 			}else{
 				g.drawImage(explosionEffect3, explosion.getX(), explosion.getY(), 30, 30, this);
 			}
-			explosion.dead();
+			new Thread(explosion).start();
+			this.repaint();
 			if(explosion.getSurvivalPeriod()==0) {
 				explosions.remove(i);
 			}
