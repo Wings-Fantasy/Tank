@@ -22,7 +22,7 @@ public class Explosion implements Runnable {
 	}
 	@Override
 	public void run() {
-		while(flag){
+		while(flag) {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {

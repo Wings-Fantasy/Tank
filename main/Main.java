@@ -1,4 +1,5 @@
 package main;
+import java.awt.Toolkit;
 import javax.swing.JFrame;
 public class Main {
 	private JFrame frame = new JFrame();
@@ -16,6 +17,7 @@ public class Main {
 		frame.addKeyListener(panel);
 	}
 	private void initialFrame() {
+		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(Main.class.getResource("/tank.jpg")));
 		frame.setTitle("Ì¹¿Ë´óÕ½");
 		frame.setSize(400,300);
 		frame.setLocation(300,280);

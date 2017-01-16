@@ -11,6 +11,7 @@ import tank.Bullet;
 import tank.EnemyTank;
 import tank.Explosion;
 import tank.MyTank;
+import tank.Tank;
 @SuppressWarnings("serial")
 public class Panel extends JPanel implements KeyListener,Runnable {
 	private MyTank myTank = new MyTank(140,232);
@@ -22,7 +23,13 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 	private Image explosionEffect3 = null;
 	public Panel() {
 		for(int i = 0;i<number;i++) {
-			enemyTanks.add(new EnemyTank((i)*181+5,0));
+			EnemyTank enemyTank = new EnemyTank((i)*181+5,0);
+			enemyTank.setFace(1);
+			new Thread(enemyTank).start();
+			Bullet bullet = new Bullet(enemyTank.getX()+10,enemyTank.getY()+30,2);
+			enemyTank.getEnemyBullets().add(bullet);
+			new Thread(bullet).start();
+			enemyTanks.add(enemyTank);
 		}
 		explosionEffect1 = Toolkit.getDefaultToolkit().getImage(Panel.class.getResource("/ExplosionEffect1.gif"));
 		explosionEffect2 = Toolkit.getDefaultToolkit().getImage(Panel.class.getResource("/ExplosionEffect2.gif"));
@@ -32,15 +39,22 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 	public void paint(Graphics g) {
 		super.paint(g);
 		g.fillRect(0, 0, 400, 300);
-		if(myTank.getX()+30==400||myTank.getX()==0||myTank.getY()+30==300||myTank.getY()==0) {
-			myTank.setX(140);
-			myTank.setY(232);
+		if(myTank.getFlag()){
+			this.drawTank(g, myTank.getX(), myTank.getY(), myTank.getFace(), 0);
 		}
-		this.drawTank(g, myTank.getX(), myTank.getY(), myTank.getFace(), 0);
 		for(int i = 0;i<enemyTanks.size();i++) {
 			EnemyTank enemyTank = enemyTanks.get(i);
 			if(enemyTank.getFlag()){
-				this.drawTank(g, enemyTanks.get(i).getX(), enemyTanks.get(i).getY(), 1, 1);
+				this.drawTank(g, enemyTanks.get(i).getX(), enemyTanks.get(i).getY(), enemyTanks.get(i).getFace(), 1);
+				for(int j = 0;j<enemyTank.getEnemyBullets().size();j++) {
+					Bullet bullet = enemyTank.getEnemyBullets().get(j);
+					if(bullet.getFlag()) {
+						g.setColor(Color.white);
+						g.fill3DRect(bullet.getX(), bullet.getY(), 3, 3, false);
+					}else{
+						enemyTank.getEnemyBullets().remove(bullet);
+					}
+				}
 			}
 		}
 		for(int i = 0;i<myTank.getBullets().size();i++) {
@@ -48,7 +62,8 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 			if(myTank.getBullet()!=null&&myTank.getBullet().getFlag()) {
 				g.setColor(Color.white);
 				g.fill3DRect(bullet.getX(), bullet.getY(), 3, 3, false);
-			}else if(!myTank.getBullet().getFlag()) {
+			}
+			if(!myTank.getBullet().getFlag()) {
 				myTank.getBullets().remove(bullet);
 			}
 		}
@@ -107,6 +122,7 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 			g.fill3DRect(x, y+15, 30, 5, false);
 			break;
 		}
+		this.repaint();
 	}
 	@Override
 	public void keyTyped(KeyEvent e) {}
@@ -116,16 +132,16 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 	public void keyPressed(KeyEvent e) {
 		if(e.getKeyCode()==KeyEvent.VK_W) {
 			myTank.setFace(0);
-			myTank.Up();
+			if(myTank.getY()>0) myTank.Up();
 		}else if(e.getKeyCode()==KeyEvent.VK_S) {
 			myTank.setFace(1);
-			myTank.Down();
+			if(myTank.getY()<241) myTank.Down();
 		}else if(e.getKeyCode()==KeyEvent.VK_A) {
 			myTank.setFace(2);
-			myTank.left();
+			if(myTank.getX()>0) myTank.left();
 		}else if(e.getKeyCode()==KeyEvent.VK_D) {
 			myTank.setFace(3);
-			myTank.right();
+			if(myTank.getX()<351) myTank.right();
 		}
 		if(e.getKeyCode()==KeyEvent.VK_SPACE) {
 			if(myTank.getBullets().size()<8){
@@ -154,30 +170,37 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 				}
 				this.repaint();
 			}
+			for(int i = 0;i<enemyTanks.size();i++) {
+				EnemyTank enemyTank = enemyTanks.get(i);
+				for(int j = 0;j<enemyTank.getEnemyBullets().size();j++) {
+					Bullet bullet = enemyTank.getEnemyBullets().get(j);
+					this.hit(bullet, myTank);
+				}
+			}
 		}
 	}
-	private boolean hit(Bullet bullet, EnemyTank enemyTank) {
+	private boolean hit(Bullet bullet, Tank Tank) {
 		boolean flag = false;
-		switch(enemyTank.getFace()) {
+		switch(Tank.getFace()) {
 		case 0:
 		case 1:
-			if(bullet.getX()>enemyTank.getX()&&bullet.getX()<enemyTank.getX()+20&&
-					bullet.getY()>enemyTank.getY()&&bullet.getY()<enemyTank.getY()+30) {
+			if(bullet.getX()>Tank.getX()&&bullet.getX()<Tank.getX()+20&&
+					bullet.getY()>Tank.getY()&&bullet.getY()<Tank.getY()+30) {
 				bullet.setFlag(false);
-				enemyTank.setFlag(false);
+				Tank.setFlag(false);
 				flag = true;
-				Explosion explosion = new Explosion(enemyTank.getX(),enemyTank.getY());
+				Explosion explosion = new Explosion(Tank.getX(),Tank.getY());
 				explosions.add(explosion);
 			}
 			break;
 		case 2:
 		case 3:
-			if(bullet.getX()>enemyTank.getX()&&bullet.getX()<enemyTank.getX()+30&&
-					bullet.getY()>enemyTank.getY()&&bullet.getY()<enemyTank.getY()+20) {
+			if(bullet.getX()>Tank.getX()&&bullet.getX()<Tank.getX()+30&&
+					bullet.getY()>Tank.getY()&&bullet.getY()<Tank.getY()+20) {
 				bullet.setFlag(false);
-				enemyTank.setFlag(false);
+				Tank.setFlag(false);
 				flag = true;
-				Explosion explosion = new Explosion(enemyTank.getX(),enemyTank.getY());
+				Explosion explosion = new Explosion(Tank.getX(),Tank.getY());
 				explosions.add(explosion);
 			}
 			break;
