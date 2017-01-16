@@ -1,22 +1,32 @@
 package main;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Vector;
 import javax.swing.JPanel;
 import tank.Bullet;
 import tank.EnemyTank;
+import tank.Explosion;
 import tank.MyTank;
 @SuppressWarnings("serial")
 public class Panel extends JPanel implements KeyListener,Runnable {
 	private MyTank myTank = new MyTank(140,232);
 	private Vector<EnemyTank> enemyTanks = new Vector<EnemyTank>();
+	private Vector<Explosion> explosions = new Vector<Explosion>();
 	private int number = 3;
+	private Image explosionEffect1 = null;
+	private Image explosionEffect2 = null;
+	private Image explosionEffect3 = null;
 	public Panel() {
 		for(int i = 0;i<number;i++) {
 			enemyTanks.add(new EnemyTank((i)*181+5,0));
 		}
+		explosionEffect1 = Toolkit.getDefaultToolkit().getImage(Panel.class.getResource("/ExplosionEffect1.gif"));
+		explosionEffect2 = Toolkit.getDefaultToolkit().getImage(Panel.class.getResource("/ExplosionEffect2.gif"));
+		explosionEffect3 = Toolkit.getDefaultToolkit().getImage(Panel.class.getResource("/ExplosionEffect3.gif"));
 	}
 	@Override
 	public void paint(Graphics g) {
@@ -40,6 +50,20 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 				g.fill3DRect(bullet.getX(), bullet.getY(), 3, 3, false);
 			}else if(!myTank.getBullet().getFlag()) {
 				myTank.getBullets().remove(bullet);
+			}
+		}
+		for(int i = 0;i<explosions.size();i++) {
+			Explosion explosion = explosions.get(i);
+			if(explosion.getSurvivalPeriod()>6) {
+				g.drawImage(explosionEffect1, explosion.getX(), explosion.getY(), 30, 30, this);
+			}else if(explosion.getSurvivalPeriod()>3) {
+				g.drawImage(explosionEffect2, explosion.getX(), explosion.getY(), 30, 30, this);
+			}else{
+				g.drawImage(explosionEffect3, explosion.getX(), explosion.getY(), 30, 30, this);
+			}
+			explosion.dead();
+			if(explosion.getSurvivalPeriod()==0) {
+				explosions.remove(i);
 			}
 		}
 	}
@@ -131,7 +155,8 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 			}
 		}
 	}
-	private void hit(Bullet bullet, EnemyTank enemyTank) {
+	private boolean hit(Bullet bullet, EnemyTank enemyTank) {
+		boolean flag = false;
 		switch(enemyTank.getFace()) {
 		case 0:
 		case 1:
@@ -139,6 +164,9 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 					bullet.getY()>enemyTank.getY()&&bullet.getY()<enemyTank.getY()+30) {
 				bullet.setFlag(false);
 				enemyTank.setFlag(false);
+				flag = true;
+				Explosion explosion = new Explosion(enemyTank.getX(),enemyTank.getY());
+				explosions.add(explosion);
 			}
 			break;
 		case 2:
@@ -147,8 +175,12 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 					bullet.getY()>enemyTank.getY()&&bullet.getY()<enemyTank.getY()+20) {
 				bullet.setFlag(false);
 				enemyTank.setFlag(false);
+				flag = true;
+				Explosion explosion = new Explosion(enemyTank.getX(),enemyTank.getY());
+				explosions.add(explosion);
 			}
 			break;
 		}
+		return flag;
 	}
 }
