@@ -65,9 +65,11 @@ public class EnemyTank extends Tank implements Runnable {
 			}
 			super.setFace((int)(Math.random()*4));
 			time++;
-			if(!super.getFlag()) {
-				break;
-			}else if(time%2==0) {
+//			if(!super.getFlag()) {
+//				break;
+//			}
+//			else 
+				if(time%2==0) {
 				if(enemyBullets.size()<8) {
 					switch(super.getFace()) {
 					case 0:

@@ -18,6 +18,8 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 	private Vector<EnemyTank> enemyTanks = new Vector<EnemyTank>();
 	private Vector<Explosion> explosions = new Vector<Explosion>();
 	private int number = 3;
+	private int flag = 2;
+	private String number1 = "0";
 	private Image explosionEffect1 = null;
 	private Image explosionEffect2 = null;
 	private Image explosionEffect3 = null;
@@ -39,8 +41,15 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 	public void paint(Graphics g) {
 		super.paint(g);
 		g.fillRect(0, 0, 400, 300);
+		g.setColor(Color.white);
+		g.drawString(number1, 10, 10);
 		if(myTank.getFlag()){
 			this.drawTank(g, myTank.getX(), myTank.getY(), myTank.getFace(), 0);
+		}else if(flag>0) {
+			myTank.setX(140);
+			myTank.setY(232);
+			myTank.setFlag(true);
+			flag--;
 		}
 		for(int i = 0;i<enemyTanks.size();i++) {
 			EnemyTank enemyTank = enemyTanks.get(i);
@@ -55,6 +64,11 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 						enemyTank.getEnemyBullets().remove(bullet);
 					}
 				}
+			}else{
+				enemyTank.setX(185);
+				enemyTank.setY(0);
+				enemyTank.setFlag(true);
+				number1 =String.valueOf((Integer.parseInt(number1))+1);
 			}
 		}
 		for(int i = 0;i<myTank.getBullets().size();i++) {
@@ -174,7 +188,9 @@ public class Panel extends JPanel implements KeyListener,Runnable {
 				EnemyTank enemyTank = enemyTanks.get(i);
 				for(int j = 0;j<enemyTank.getEnemyBullets().size();j++) {
 					Bullet bullet = enemyTank.getEnemyBullets().get(j);
-					this.hit(bullet, myTank);
+					if(myTank.getFlag()) {
+						this.hit(bullet, myTank);
+					}
 				}
 			}
 		}
